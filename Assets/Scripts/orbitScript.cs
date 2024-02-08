@@ -11,15 +11,17 @@ using UnityEngine;
 
 public class orbitScript  : MonoBehaviour
 {
-    private List<Vector3> PseudoParabolaPoses(Vector3 position, Vector3 direction, float distance, out float sumDistance,
+    public static List<Vector3> PseudoParabolaPoses(Vector3 position, Vector3 direction, float distance, out float sumDistance,
              float fallCurveVolume = 1f, float fallCurveDelta = 0.1f, float maxFallDistance = 100f, Vector3? fallVector = null)
     {
         sumDistance = 0f;
 
+        // /* If you want to speed it up even a little, comment it out.
         direction.Normalize();
         fallCurveVolume = Mathf.Max(0.01f, fallCurveVolume);
         fallCurveDelta = Mathf.Max(0.01f, fallCurveDelta);
-       
+        // */
+
         if (!fallVector.HasValue) fallVector = Vector3.down;
         var list = new List<Vector3>() { position };
 
@@ -30,6 +32,7 @@ public class orbitScript  : MonoBehaviour
         var diffDirectionRate = Mathf.Acos(Vector3.Dot(direction, fallVector.Value));
         if (diffDirectionRate > 0f)
         {
+            // Reciprocal of PI : 0.31830988618f
             var fallLength = diffDirectionRate * 0.31830988618f;
             fallCurveDelta /= fallLength;
             var fallStep = 0f;
@@ -53,4 +56,5 @@ public class orbitScript  : MonoBehaviour
         return list;
     }
 }
+
 
