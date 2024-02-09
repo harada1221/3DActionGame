@@ -51,7 +51,7 @@ public class CameraControllerScript : MonoBehaviour
         float X_Rotation = Input.GetAxis(_horizontal);
         float Y_Rotation = Input.GetAxis(_vertical);
         //Y軸を更新、取得したX軸の変更をキャラクターのY軸に反映
-        _character.transform.Rotate(0, X_Rotation * _speed, 0);
+        _character.transform.Rotate(0, X_Rotation * _speed * Time.deltaTime, 0);
 
         //X軸の設定
         float nowAngle = _pivot.transform.localRotation.x;
@@ -62,14 +62,14 @@ public class CameraControllerScript : MonoBehaviour
             {
                 if (minYAngle <= nowAngle)
                 {
-                    _pivot.transform.Rotate(-Y_Rotation * _speed, 0, 0);
+                    _pivot.transform.Rotate(-Y_Rotation * _speed * Time.deltaTime, 0, 0);
                 }
             }
             else
             {
                 if (nowAngle <= maxYAngle)
                 {
-                    _pivot.transform.Rotate(-Y_Rotation * _speed, 0, 0);
+                    _pivot.transform.Rotate(-Y_Rotation * _speed* Time.deltaTime, 0, 0);
                 }
             }
         }

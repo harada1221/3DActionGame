@@ -15,8 +15,8 @@ public class ballScript : MonoBehaviour
 {
     #region 変数宣言
     private ballisticScript _ballisticScript = default;
-    [SerializeField]
-    private float _speed = default;
+    //[SerializeField]
+    //private float _speed = default;
     #endregion
     /// <summary>
     /// 初期化処理
