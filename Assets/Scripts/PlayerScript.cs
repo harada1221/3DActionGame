@@ -28,6 +28,7 @@ public class PlayerScript : MonoBehaviour
     private Camera _mainCamera = default;
     [SerializeField]
     private float _jumpTime = 10f;
+    private CameraScript _cameraScript = default;
     private Animator _animator = default;
     private Transform _transform = default;
     private float _timer = default;
@@ -35,6 +36,8 @@ public class PlayerScript : MonoBehaviour
     private float _turnVelocity = default;
     private bool isGround = false;
     private bool isJump = false;
+    // 前フレームのワールド位置
+    private Vector3 _prevPosition;
 
 
     private string _horizontal = "Horizontal";
@@ -49,6 +52,7 @@ public class PlayerScript : MonoBehaviour
     {
         _transform = transform;
         _animator = GetComponent<Animator>();
+        _cameraScript = _mainCamera.GetComponent<CameraScript>();
     }
 
     /// <summary>
@@ -57,10 +61,9 @@ public class PlayerScript : MonoBehaviour
     private void Update()
     {
         //スティックのX,Y軸がどれほど移動したか
-        float X_Move = Input.GetAxis(_horizontal);
-        float Z_Move = Input.GetAxis(_vertical);
+        float X_Move = Input.GetAxisRaw(_horizontal);
+        float Z_Move = Input.GetAxisRaw(_vertical);
 
-        Debug.Log(_horizontal);
         if (X_Move != 0 || Z_Move != 0)
         {
             PlayerMove(X_Move, Z_Move);
@@ -69,18 +72,18 @@ public class PlayerScript : MonoBehaviour
         {
             _animator.SetBool("Walking", false);
         }
-        if (Input.GetButton("Jump2") || Input.GetKey(KeyCode.Space))
+        if (Input.GetButton(_jump) || Input.GetKey(KeyCode.Space))
         {
             isJump = true;
             Jump();
         }
-        if (Input.GetButtonUp("Jump2")|| Input.GetKeyUp(KeyCode.Space))
+        if (Input.GetButtonUp(_jump) || Input.GetKeyUp(KeyCode.Space))
         {
             isJump = false;
         }
         if (_transform.position.y <= 0)
         {
-            Debug.Log("着地");
+            //Debug.Log("着地");
             _timer = 0;
             _transform.position = new Vector3(_transform.position.x, 0, _transform.position.z);
         }
@@ -96,14 +99,27 @@ public class PlayerScript : MonoBehaviour
     /// <param name="MoveZ">Zの移動量</param>
     private void PlayerMove(float MoveX, float MoveZ)
     {
-        Debug.Log("移動");
         _animator.SetBool("Walking", true);
         //カメラの前方向を取得
-        Vector3 comFoward = new Vector3(_mainCamera.transform.forward.x, 0, _mainCamera.transform.forward.z).normalized;
+        Vector3 comForward = new Vector3(_mainCamera.transform.forward.x, 0, _mainCamera.transform.forward.z).normalized;
+
         //移動量を計算
-        Vector3 pos = comFoward * MoveZ + _mainCamera.transform.right * MoveX;
+        //カメラの方向
+        Vector3 cameraRight = _mainCamera.transform.right;
+        //y座標を消す
+        cameraRight.y -= _mainCamera.transform.right.y; 
+        Vector3 moveDirection = comForward * MoveZ + cameraRight * MoveX;
+        moveDirection = moveDirection.normalized;
+        //プレイヤーを移動方向に向かせる
+        if (moveDirection != Vector3.zero)
+        {
+            Quaternion newRotation = Quaternion.LookRotation(moveDirection);
+            _transform.rotation = newRotation;
+        }
+
         //移動させる
-        _transform.position += pos * _speed * Time.deltaTime;
+        _transform.position += moveDirection * _speed * Time.deltaTime;
+        _mainCamera.transform.position += moveDirection * _speed * Time.deltaTime;
     }
     private void Jump()
     {

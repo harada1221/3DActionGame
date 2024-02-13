@@ -21,9 +21,9 @@ public class CameraControllerScript : MonoBehaviour
     private float _speed = 1f;
     //カメラ上下移動の最大、最小角度
     [Range(-0.999f, -0.5f)]
-    public float maxYAngle = -0.5f;
+    public float _maxYAngle = -0.5f;
     [Range(0.5f, 0.999f)]
-    public float minYAngle = 0.5f;
+    public float _minYAngle = 0.5f;
     private string _horizontal = "Horizontal2";
     private string _vertical = "Vertical2";
 
@@ -60,14 +60,14 @@ public class CameraControllerScript : MonoBehaviour
         {
             if (0 < Y_Rotation)
             {
-                if (minYAngle <= nowAngle)
+                if (_minYAngle <= nowAngle)
                 {
                     _pivot.transform.Rotate(-Y_Rotation * _speed * Time.deltaTime, 0, 0);
                 }
             }
             else
             {
-                if (nowAngle <= maxYAngle)
+                if (nowAngle <= _maxYAngle)
                 {
                     _pivot.transform.Rotate(-Y_Rotation * _speed* Time.deltaTime, 0, 0);
                 }
