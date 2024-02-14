@@ -28,31 +28,37 @@ public class PlayerScript : MonoBehaviour
     private Camera _mainCamera = default;
     [SerializeField]
     private float _jumpTime = 10f;
-    private CameraScript _cameraScript = default;
+    private GunScript _gunScript = default;
     private Animator _animator = default;
     private Transform _transform = default;
+    private Vector3 _cameraPosition = default;
     private float _timer = default;
-    private float _verticalVelocity = default;
-    private float _turnVelocity = default;
-    private bool isGround = false;
     private bool isJump = false;
-    // 前フレームのワールド位置
-    private Vector3 _prevPosition;
+    private bool isShoot = false;
+    private PlayerStatus _playerStatus = PlayerStatus.Idle;
 
 
     private string _horizontal = "Horizontal";
     private string _vertical = "Vertical";
     private string _jump = "Jump2";
-
+    private string _shot = "RTrigger";
     #endregion
+    private enum PlayerStatus
+    {
+        Idle,
+        Walk,
+        Shot
+    }
+    public bool GetShoot { get => isShoot; }
     /// <summary>
     /// 初期化処理
     /// </summary>
     private void Start()
     {
         _transform = transform;
+        _cameraPosition = _mainCamera.transform.position;
         _animator = GetComponent<Animator>();
-        _cameraScript = _mainCamera.GetComponent<CameraScript>();
+        _gunScript = GetComponent<GunScript>();
     }
 
     /// <summary>
@@ -63,7 +69,9 @@ public class PlayerScript : MonoBehaviour
         //スティックのX,Y軸がどれほど移動したか
         float X_Move = Input.GetAxisRaw(_horizontal);
         float Z_Move = Input.GetAxisRaw(_vertical);
+        float R_Trigger = Input.GetAxisRaw(_shot);
 
+        //移動
         if (X_Move != 0 || Z_Move != 0)
         {
             PlayerMove(X_Move, Z_Move);
@@ -72,6 +80,7 @@ public class PlayerScript : MonoBehaviour
         {
             _animator.SetBool("Walking", false);
         }
+        //ジャンプ
         if (Input.GetButton(_jump) || Input.GetKey(KeyCode.Space))
         {
             isJump = true;
@@ -81,6 +90,7 @@ public class PlayerScript : MonoBehaviour
         {
             isJump = false;
         }
+        //着地
         if (_transform.position.y <= 0)
         {
             //Debug.Log("着地");
@@ -90,6 +100,20 @@ public class PlayerScript : MonoBehaviour
         else if (isJump == false)
         {
             _transform.position += Vector3.down * _fallSpeed * Time.deltaTime;
+        }
+        //射撃
+        if (R_Trigger != 0)
+        {
+            CameraRevolution();
+            Debug.Log("射撃");
+            _gunScript.Ballistic();
+            isShoot = true;
+            _playerStatus = PlayerStatus.Shot;
+        }
+        else
+        {
+            isShoot = false;
+            _playerStatus = PlayerStatus.Idle;
         }
     }
     /// <summary>
@@ -107,11 +131,11 @@ public class PlayerScript : MonoBehaviour
         //カメラの方向
         Vector3 cameraRight = _mainCamera.transform.right;
         //y座標を消す
-        cameraRight.y -= _mainCamera.transform.right.y; 
+        cameraRight.y -= _mainCamera.transform.right.y;
         Vector3 moveDirection = comForward * MoveZ + cameraRight * MoveX;
         moveDirection = moveDirection.normalized;
         //プレイヤーを移動方向に向かせる
-        if (moveDirection != Vector3.zero)
+        if (moveDirection != Vector3.zero && _playerStatus != PlayerStatus.Shot)
         {
             Quaternion newRotation = Quaternion.LookRotation(moveDirection);
             _transform.rotation = newRotation;
@@ -121,6 +145,9 @@ public class PlayerScript : MonoBehaviour
         _transform.position += moveDirection * _speed * Time.deltaTime;
         _mainCamera.transform.position += moveDirection * _speed * Time.deltaTime;
     }
+    /// <summary>
+    /// ジャンプさせる
+    /// </summary>
     private void Jump()
     {
         if (_timer < _jumpTime)
@@ -133,6 +160,14 @@ public class PlayerScript : MonoBehaviour
             isJump = false;
         }
 
+    }
+    private void CameraRevolution()
+    {
+        if (isShoot == false)
+        {
+            Vector3 playerRotation = new Vector3(_transform.rotation.x, _mainCamera.transform.eulerAngles.y, _transform.rotation.z);
+            _transform.rotation = Quaternion.Euler(playerRotation);
+        }
     }
 }
 
