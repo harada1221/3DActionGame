@@ -6309,8 +6309,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25141d12dd0373d48a078eff71bff792, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _speed: 6
-  _jumpSpeed: 6
+  _speed: 10
+  _jumpSpeed: 3
   _gravity: -9.81
   _fallSpeed: 5
   _fallfirstSpeed: 2
@@ -6330,10 +6330,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _shootPosition: {fileID: 791212580}
   _mainCamera: {fileID: 963194227}
-  _power: 15
-  _ball: {fileID: 7133909594233297949, guid: 10f574b5337768d4dad8d625e72a1248, type: 3}
-  _maxCount: 300
+  _power: 10
+  _maxCount: 20
   _ballScript: {fileID: 4810235947771745830, guid: 10f574b5337768d4dad8d625e72a1248, type: 3}
+  _shotCoolTime: 0.1
 --- !u!137 &1560071098
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 0

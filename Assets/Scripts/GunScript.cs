@@ -20,13 +20,17 @@ public class GunScript : MonoBehaviour
     private Camera _mainCamera = default;
     [SerializeField, Header("威力")]
     private float _power = default;
-    [SerializeField, Header("玉")]
-    private GameObject _ball = default;
     [SerializeField, Header("生成する数")]
     private int _maxCount = 100;
-    [SerializeField]
+    [SerializeField, Header("生成する弾")]
     private BallScript _ballScript = default;
+    [SerializeField, Header("射撃のクールタイム")]
+    private float _shotCoolTime = 2f;
+    //射撃のカウント
+    private float _shotTime = default;
+    //射撃の方向
     private Vector3 _finalDestination = default;
+    //プール用のQueue
     private Queue<BallScript> _ballQueue = default;
     #endregion
     public float GetPower { get => _power; }
@@ -41,45 +45,48 @@ public class GunScript : MonoBehaviour
         for (int i = 0; i < _maxCount; i++)
         {
             //生成
-            BallScript ball = Instantiate(_ballScript, _shootPosition.transform.position, Quaternion.identity, transform);
-            ball.transform.parent = null;
+            BallScript ball = Instantiate(_ballScript, _shootPosition.transform.position, Quaternion.identity);
             //Queueに追加
             _ballQueue.Enqueue(ball);
+            //非表示
+            ball.gameObject.SetActive(false);
         }
-    }
-
-    /// <summary>
-    /// 更新処理
-    /// </summary>
-    private void Update()
-    {
-        //Debug.Log(_shootPosition.position);
     }
     /// <summary>
     ///　弾を表示
     /// </summary>
     public void Ballistic()
     {
+        //クールタイム加算
+        _shotTime +=  Time.deltaTime;
+        //クールタイムならリターン
+        if (_shotTime < _shotCoolTime)
+        {
+            return;
+        }
+        //タイマー初期化
+        _shotTime = 0;
         //Queueの中になかったら生成
         if (_ballQueue.Count <= 0)
         {
             //生成
-            BallScript ball = Instantiate(_ballScript, _shootPosition.transform.position, Quaternion.identity, transform);
-            ball.transform.parent = null;
+            BallScript ball = Instantiate(_ballScript, _shootPosition.transform.position, Quaternion.identity);
             //Queueに追加
             _ballQueue.Enqueue(ball);
+            //非表示
+            ball.gameObject.SetActive(false);
         }
-        //弾の方向を設定
-        _finalDestination = transform.forward;
-        _finalDestination.y = _mainCamera.transform.forward.y;
         //弾を取り出す
         BallScript ballScript = _ballQueue.Dequeue();
         //弾を表示
         ballScript.gameObject.SetActive(true);
+        //弾の方向を設定
+        _finalDestination = transform.forward;
+        _finalDestination.y = _mainCamera.transform.forward.y;
         //発射位置に移動
         ballScript.transform.position = _shootPosition.transform.position;
         //方向を決定
-        ballScript.SetVelocity(_finalDestination);
+        ballScript.SetVelocity(_finalDestination, _shootPosition.transform.position);
     }
     /// <summary>
     /// 弾を格納する

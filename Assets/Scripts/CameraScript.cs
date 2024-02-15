@@ -21,8 +21,8 @@ public class CameraScript : MonoBehaviour
     private PlayerScript _playerScript = default;
     private GameObject _hitObj = default;
     private const float  _rayDistance = 5f;
-    private string _horizontal = "Horizontal2";
-    private string _vertical = "Vertical2";
+    private const string _horizontal = "Horizontal2";
+    private const string _vertical = "Vertical2";
     #endregion
     private void Start()
     {
@@ -42,6 +42,7 @@ public class CameraScript : MonoBehaviour
             //回転軸はワールド座標のY軸
             transform.RotateAround(_player.transform.position, Vector3.up, X_Rotation * Time.deltaTime * _speed);
         }
+        //射撃中の移動
         else if(_playerScript.GetShoot == true)
         {
             //回転軸はワールド座標のY軸

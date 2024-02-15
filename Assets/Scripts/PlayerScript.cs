@@ -26,18 +26,25 @@ public class PlayerScript : MonoBehaviour
     private float _fallfirstSpeed = 2;
     [SerializeField, Header("メインカメラ")]
     private Camera _mainCamera = default;
-    [SerializeField]
+    [SerializeField,Header("ジャンプの時間")]
     private float _jumpTime = 10f;
+   
+    //銃スクリプト
     private GunScript _gunScript = default;
+    //プレイヤーのアニメータ
     private Animator _animator = default;
+    //自分のポジション
     private Transform _transform = default;
-    private Vector3 _cameraPosition = default;
+    //タイマーカウント
     private float _timer = default;
+    //ジャンプフラグ
     private bool isJump = false;
+    //射撃フラグ
     private bool isShoot = false;
+    //プレイヤーのステート
     private PlayerStatus _playerStatus = PlayerStatus.Idle;
 
-
+    //入力の名前
     private string _horizontal = "Horizontal";
     private string _vertical = "Vertical";
     private string _jump = "Jump2";
@@ -49,15 +56,19 @@ public class PlayerScript : MonoBehaviour
         Walk,
         Shot
     }
+    #region プロパティ
     public bool GetShoot { get => isShoot; }
+    #endregion
     /// <summary>
     /// 初期化処理
     /// </summary>
     private void Start()
     {
+        //自分のポジション
         _transform = transform;
-        _cameraPosition = _mainCamera.transform.position;
+        //アニメーター取得
         _animator = GetComponent<Animator>();
+        //銃のスクリプト取得
         _gunScript = GetComponent<GunScript>();
     }
 
@@ -69,6 +80,7 @@ public class PlayerScript : MonoBehaviour
         //スティックのX,Y軸がどれほど移動したか
         float X_Move = Input.GetAxisRaw(_horizontal);
         float Z_Move = Input.GetAxisRaw(_vertical);
+        //コントローラーのRトリガー
         float R_Trigger = Input.GetAxisRaw(_shot);
 
         //移動
@@ -93,25 +105,29 @@ public class PlayerScript : MonoBehaviour
         //着地
         if (_transform.position.y <= 0)
         {
-            //Debug.Log("着地");
+            //タイマーリセット
             _timer = 0;
             _transform.position = new Vector3(_transform.position.x, 0, _transform.position.z);
         }
         else if (isJump == false)
         {
+            //下向きに移動
             _transform.position += Vector3.down * _fallSpeed * Time.deltaTime;
         }
         //射撃
-        if (R_Trigger != 0)
+        if (R_Trigger != 0 || Input.GetKey(KeyCode.E))
         {
+            //カメラの向き調整
             CameraRevolution();
-            Debug.Log("射撃");
+            //射撃
             _gunScript.Ballistic();
+            //ステート変更
             isShoot = true;
             _playerStatus = PlayerStatus.Shot;
         }
         else
         {
+            //射撃終了
             isShoot = false;
             _playerStatus = PlayerStatus.Idle;
         }
@@ -150,6 +166,7 @@ public class PlayerScript : MonoBehaviour
     /// </summary>
     private void Jump()
     {
+        //ジャンプ可能か
         if (_timer < _jumpTime)
         {
             _timer += 1f * Time.deltaTime;
@@ -161,10 +178,15 @@ public class PlayerScript : MonoBehaviour
         }
 
     }
+    /// <summary>
+    /// プレイヤーの向き調整
+    /// </summary>
     private void CameraRevolution()
     {
+        //1回目の射撃か
         if (isShoot == false)
         {
+            //カメラの向きに合わせて回転
             Vector3 playerRotation = new Vector3(_transform.rotation.x, _mainCamera.transform.eulerAngles.y, _transform.rotation.z);
             _transform.rotation = Quaternion.Euler(playerRotation);
         }
