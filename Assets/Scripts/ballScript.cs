@@ -18,11 +18,20 @@ public class BallScript : MonoBehaviour
     private float _speed = default;
     [SerializeField, Header("落下スピード")]
     private float _foolSpeed = default;
+    [SerializeField, Header("当たり判定の半径")]
+    private float _radius = 0.2f;
+    //射撃の向き
     private Vector3 _shootVelocity = default;
+    //射撃するプレイヤー
     private GameObject _player = default;
+    //射撃位置
     private Vector3 _nowShotPosition = default;
+    //銃のスクリプト
     private GunScript _gunScript = default;
+    //射程の最高地点に到達したか
     private bool isAngle = default;
+
+    private CalcUVScript _calcUV = default;
     #endregion
     /// <summary>
     /// 初期化処理
@@ -31,6 +40,7 @@ public class BallScript : MonoBehaviour
     {
         //プレイヤー取得
         _player = GameObject.FindWithTag("Player");
+        _calcUV = GameObject.FindWithTag("MainCamera").GetComponent<CalcUVScript>();
         //銃のスクリプト
         _gunScript = _player.GetComponent<GunScript>();
     }
@@ -40,20 +50,23 @@ public class BallScript : MonoBehaviour
     /// </summary>
     private void Update()
     {
+        //射程範囲内か
         if (_gunScript.GetPower >= Vector3.Distance(transform.position, _nowShotPosition) && isAngle == false)
         {
             //毎フレーム弾を移動させる
             transform.position += _shootVelocity * _speed * Time.deltaTime;
         }
-        //射程距離計算
+        //射程距離範囲外
         else
         {
             //弾を落下
             FoolMove();
         }
-        //着地判定
-        if (transform.position.y <= 0)
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, _shootVelocity, out hit, _radius, LayerMask.GetMask("floor")) /*|| transform.position.y < 0*/)
         {
+            Debug.Log(hit.transform.name);
+            _calcUV.HitObj(hit);
             //弾回収
             HideFromStage();
         }
@@ -65,6 +78,7 @@ public class BallScript : MonoBehaviour
     /// <param name="shotPosition">発射位置</param>
     public void SetVelocity(Vector3 shotDirections, Vector3 shotPosition)
     {
+
         isAngle = false;
         //向き設定
         _shootVelocity = shotDirections.normalized;
@@ -87,8 +101,11 @@ public class BallScript : MonoBehaviour
         isAngle = true;
         //下に落とす
         _shootVelocity += Vector3.down * Time.deltaTime * _foolSpeed;
-        Debug.Log(_shootVelocity);
         transform.position += _shootVelocity * Time.deltaTime;
+    }
+    void OnDrawGizmos()
+    {
+        Gizmos.DrawSphere(transform.position, _radius);
     }
 }
 

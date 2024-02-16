@@ -120,3 +120,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _speed: 30
   _foolSpeed: 50
+  _radius: 0.1
