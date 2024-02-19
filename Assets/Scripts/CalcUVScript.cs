@@ -20,7 +20,7 @@ public class CalcUVScript : MonoBehaviour
         for (int i = 0; i < mesh.triangles.Length; i += 3)
         {
             #region 1.ある点pが与えられた3点において平面上に存在するか
-
+            //3点を持ってくる
             int indexFirst = i + 0;
             int indexSecond = i + 1;
             int indexThird = i + 2;
@@ -38,7 +38,7 @@ public class CalcUVScript : MonoBehaviour
             Vector3 crossProduct = Vector3.Cross(edgeVectorFirst, edgeVectorSecond);
             float val = Vector3.Dot(crossProduct, edgeVectorThird);
 
-            //適当に小さい少数値で誤差をカバー
+            //小さい少数値で誤差をカバー
             bool suc = -0.000001f < val && val < 0.000001f;
 
             #endregion 1.ある点pが与えられた3点において平面上に存在するか
@@ -51,14 +51,16 @@ public class CalcUVScript : MonoBehaviour
             }
             else
             {
-                Vector3 a = Vector3.Cross(triangleVerticesFirst - triangleVerticesThird, localHitPoint - triangleVerticesFirst).normalized;
-                Vector3 b = Vector3.Cross(triangleVerticesSecound - triangleVerticesFirst, localHitPoint - triangleVerticesSecound).normalized;
-                Vector3 c = Vector3.Cross(triangleVerticesThird - triangleVerticesSecound, localHitPoint - triangleVerticesThird).normalized;
+                //外積の計算
 
-                float d_ab = Vector3.Dot(a, b);
-                float d_bc = Vector3.Dot(b, c);
-
-                suc = 0.999f < d_ab && 0.999f < d_bc;
+                Vector3 crossProductFirst = Vector3.Cross(triangleVerticesFirst - triangleVerticesThird, localHitPoint - triangleVerticesFirst).normalized;
+                Vector3 crossProductSecound = Vector3.Cross(triangleVerticesSecound - triangleVerticesFirst, localHitPoint - triangleVerticesSecound).normalized;
+                Vector3 crossProductThird = Vector3.Cross(triangleVerticesThird - triangleVerticesSecound, localHitPoint - triangleVerticesThird).normalized;
+                //正規化
+                float dotProductAB = Vector3.Dot(crossProductFirst, crossProductSecound);
+                float dotProductBC = Vector3.Dot(crossProductSecound, crossProductThird);
+                //小さい少数値で誤差をカバー
+                suc = 0.999f < dotProductAB && 0.999f < dotProductBC;
             }
 
             #endregion 2.同一平面上に存在する点pが三角形内部に存在するか
@@ -71,31 +73,33 @@ public class CalcUVScript : MonoBehaviour
             }
             else
             {
-                Vector2 uv1 = mesh.uv[mesh.triangles[indexFirst]];
-                Vector2 uv2 = mesh.uv[mesh.triangles[indexSecond]];
-                Vector2 uv3 = mesh.uv[mesh.triangles[indexThird]];
+                //三角形のUV座標
+                Vector2 uvFirst = mesh.uv[mesh.triangles[indexFirst]];
+                Vector2 uvSecound = mesh.uv[mesh.triangles[indexSecond]];
+                Vector2 uvThird = mesh.uv[mesh.triangles[indexThird]];
 
-                //PerspectiveCollect
+                //モデルビュープロジェクション行列
                 Matrix4x4 mvp = Camera.main.projectionMatrix * Camera.main.worldToCameraMatrix * hitinfo.transform.localToWorldMatrix;
                 //各点をProjectionSpaceへの変換
-                Vector4 p1_p = mvp * new Vector4(triangleVerticesFirst.x, triangleVerticesFirst.y, triangleVerticesFirst.z, 1);
-                Vector4 p2_p = mvp * new Vector4(triangleVerticesSecound.x, triangleVerticesSecound.y, triangleVerticesSecound.z, 1);
-                Vector4 p3_p = mvp * new Vector4(triangleVerticesThird.x, triangleVerticesThird.y, triangleVerticesThird.z, 1);
-                Vector4 p_p = mvp * new Vector4(localHitPoint.x, localHitPoint.y, localHitPoint.z, 1);
+                Vector4 pFirst = mvp * new Vector4(triangleVerticesFirst.x, triangleVerticesFirst.y, triangleVerticesFirst.z, 1);
+                Vector4 pSecond = mvp * new Vector4(triangleVerticesSecound.x, triangleVerticesSecound.y, triangleVerticesSecound.z, 1);
+                Vector4 pThird = mvp * new Vector4(triangleVerticesThird.x, triangleVerticesThird.y, triangleVerticesThird.z, 1);
+                Vector4 pProject = mvp * new Vector4(localHitPoint.x, localHitPoint.y, localHitPoint.z, 1);
                 //通常座標への変換(ProjectionSpace)
-                Vector2 p1_n = new Vector2(p1_p.x, p1_p.y) / p1_p.w;
-                Vector2 p2_n = new Vector2(p2_p.x, p2_p.y) / p2_p.w;
-                Vector2 p3_n = new Vector2(p3_p.x, p3_p.y) / p3_p.w;
-                Vector2 p_n = new Vector2(p_p.x, p_p.y) / p_p.w;
+                Vector2 normalizedPFirst = new Vector2(pFirst.x, pFirst.y) / pFirst.w;
+                Vector2 normalizedPSecond = new Vector2(pSecond.x, pSecond.y) / pSecond.w;
+                Vector2 normalizedPThird = new Vector2(pThird.x, pThird.y) / pThird.w;
+                //プロジェクションされたポイントを正規化した座標
+                Vector2 normalizedProjectPoint = new Vector2(pProject.x, pProject.y) / pProject.w;
                 //頂点のなす三角形を点pにより3分割し、必要になる面積を計算
-                float s = 0.5f * ((p2_n.x - p1_n.x) * (p3_n.y - p1_n.y) - (p2_n.y - p1_n.y) * (p3_n.x - p1_n.x));
-                float s1 = 0.5f * ((p3_n.x - p_n.x) * (p1_n.y - p_n.y) - (p3_n.y - p_n.y) * (p1_n.x - p_n.x));
-                float s2 = 0.5f * ((p1_n.x - p_n.x) * (p2_n.y - p_n.y) - (p1_n.y - p_n.y) * (p2_n.x - p_n.x));
+                float triangleArea = 0.5f * ((normalizedPSecond.x - normalizedPFirst.x) * (normalizedPThird.y - normalizedPFirst.y) - (normalizedPSecond.y - normalizedPFirst.y) * (normalizedPThird.x - normalizedPFirst.x));
+                float areaFirst = 0.5f * ((normalizedPThird.x - normalizedProjectPoint.x) * (normalizedPFirst.y - normalizedProjectPoint.y) - (normalizedPThird.y - normalizedProjectPoint.y) * (normalizedPFirst.x - normalizedProjectPoint.x));
+                float areaSecond = 0.5f * ((normalizedPFirst.x - normalizedProjectPoint.x) * (normalizedPSecond.y - normalizedProjectPoint.y) - (normalizedPFirst.y - normalizedProjectPoint.y) * (normalizedPSecond.x - normalizedProjectPoint.x));
                 //面積比からuvを補間
-                float u = s1 / s;
-                float v = s2 / s;
-                float w = 1 / ((1 - u - v) * 1 / p1_p.w + u * 1 / p2_p.w + v * 1 / p3_p.w);
-                Vector2 uv = w * ((1 - u - v) * uv1 / p1_p.w + u * uv2 / p2_p.w + v * uv3 / p3_p.w);
+                float u = areaFirst / triangleArea;
+                float v = areaSecond / triangleArea;
+                float w = 1 / ((1 - u - v) * 1 / pFirst.w + u * 1 / pSecond.w + v * 1 / pThird.w);
+                Vector2 uv = w * ((1 - u - v) * uvFirst / pFirst.w + u * uvSecound / pSecond.w + v * uvThird / pThird.w);
 
                 //uvが求まったよ!!!!
                 Debug.Log(uv + ":" + hitinfo.textureCoord);

@@ -70,6 +70,11 @@ public class BallScript : MonoBehaviour
             //弾回収
             HideFromStage();
         }
+        //0以下だと回収
+        if (transform.position.y < 0)
+        {
+            HideFromStage();
+        }
     }
     /// <summary>
     /// 弾の方向を設定
