@@ -121,3 +121,4 @@ MonoBehaviour:
   _speed: 30
   _foolSpeed: 50
   _radius: 0.1
+  _ink: {fileID: 7822068588387378169, guid: 3029410740fa0b14381526044735b2af, type: 3}

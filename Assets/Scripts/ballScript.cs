@@ -20,6 +20,8 @@ public class BallScript : MonoBehaviour
     private float _foolSpeed = default;
     [SerializeField, Header("当たり判定の半径")]
     private float _radius = 0.2f;
+    [SerializeField, Header("インク")]
+    private GameObject _ink = default;
     //射撃の向き
     private Vector3 _shootVelocity = default;
     //射撃するプレイヤー
@@ -66,7 +68,7 @@ public class BallScript : MonoBehaviour
         if (Physics.Raycast(transform.position, _shootVelocity, out hit, _radius, LayerMask.GetMask("floor")) /*|| transform.position.y < 0*/)
         {
             Debug.Log(hit.transform.name);
-            _calcUV.HitObj(hit);
+            Paint(hit);
             //弾回収
             HideFromStage();
         }
@@ -108,9 +110,10 @@ public class BallScript : MonoBehaviour
         _shootVelocity += Vector3.down * Time.deltaTime * _foolSpeed;
         transform.position += _shootVelocity * Time.deltaTime;
     }
-    void OnDrawGizmos()
+   private void Paint(RaycastHit hit)
     {
-        Gizmos.DrawSphere(transform.position, _radius);
+        GameObject decal = Instantiate(_ink, hit.point, Quaternion.identity);
+        decal.transform.forward = hit.normal; // デカールを法線方向に向ける
     }
 }
 
