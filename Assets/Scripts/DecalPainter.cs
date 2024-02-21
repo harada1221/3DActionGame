@@ -20,7 +20,7 @@ public class DecalPainter : IDisposable
     public Texture2D texture { get; private set; }
     public Material mappingMaterial { get; private set; }
 
-    Mesh _targetMesh;
+    private Mesh _targetMesh = default;
 
 
     public DecalPainter(MeshFilter targetMeshFilter, int textureSize = 2048)
@@ -85,16 +85,16 @@ public class DecalPainter : IDisposable
         Texture2D dst = texture;
 
         //RenderTargetの設定
-        var temporaryActiveRenderTarget = RenderTexture.GetTemporary(dst.width, dst.height, 0);
-        var activeRenderTexture = RenderTexture.active;
+        RenderTexture temporaryActiveRenderTarget = RenderTexture.GetTemporary(dst.width, dst.height, 0);
+        RenderTexture activeRenderTexture = RenderTexture.active;
         RenderTexture.active = temporaryActiveRenderTarget;
 
-        // sourceを描画して、dst(累積テクスチャ)に書き込む
+        //sourceを描画して、dst(累積テクスチャ)に書き込む
         Graphics.Blit(src, temporaryActiveRenderTarget);
         dst.ReadPixels(new Rect(0f, 0f, dst.width, dst.height), 0, 0);
         dst.Apply();
 
-        // RenderTargetを元に戻す
+        //RenderTargetを元に戻す
         RenderTexture.active = activeRenderTexture;
         RenderTexture.ReleaseTemporary(temporaryActiveRenderTarget);
     }
@@ -128,21 +128,21 @@ public class DecalPainter : IDisposable
     {
         Texture2D dst = texture;
 
-        // RenderTargetの設定
+        //RenderTargetの設定
         RenderTexture temporaryRenderTexture = RenderTexture.GetTemporary(dst.width, dst.height, 0);
         RenderTexture activeRenderTexture = RenderTexture.active;
         RenderTexture.active = temporaryRenderTexture;
 
-        // 対象Meshを用いて、デカール画像を累積テクスチャに重ねてRenderTargetに描画する
+        //対象Meshを用いて、デカール画像を累積テクスチャに重ねてRenderTargetに描画する
         GL.Clear(clearDepth: true, clearColor: true, Color.clear);
         mappingMaterial.SetPass(0);
         Graphics.DrawMeshNow(_targetMesh, Vector3.zero, Quaternion.identity);
 
-        // RenderTargetを累積テクスチャに書き込む
+        //RenderTargetを累積テクスチャに書き込む
         dst.ReadPixels(new Rect(0f, 0f, dst.width, dst.height), 0, 0);
         dst.Apply();
 
-        // RenderTargetを元に戻す
+        //RenderTargetを元に戻す
         RenderTexture.active = activeRenderTexture;
         RenderTexture.ReleaseTemporary(temporaryRenderTexture);
     }

@@ -20,8 +20,6 @@ public class BallScript : MonoBehaviour
     private float _foolSpeed = default;
     [SerializeField, Header("当たり判定の半径")]
     private float _radius = 0.2f;
-    [SerializeField, Header("インク")]
-    private GameObject _ink = default;
     //射撃の向き
     private Vector3 _shootVelocity = default;
     //射撃するプレイヤー
@@ -32,8 +30,6 @@ public class BallScript : MonoBehaviour
     private GunScript _gunScript = default;
     //射程の最高地点に到達したか
     private bool isAngle = default;
-
-    private CalcUVScript _calcUV = default;
     #endregion
     /// <summary>
     /// 初期化処理
@@ -42,7 +38,6 @@ public class BallScript : MonoBehaviour
     {
         //プレイヤー取得
         _player = GameObject.FindWithTag("Player");
-        _calcUV = GameObject.FindWithTag("MainCamera").GetComponent<CalcUVScript>();
         //銃のスクリプト
         _gunScript = _player.GetComponent<GunScript>();
     }
@@ -64,16 +59,8 @@ public class BallScript : MonoBehaviour
             //弾を落下
             FoolMove();
         }
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, _shootVelocity, out hit, _radius, LayerMask.GetMask("floor")) /*|| transform.position.y < 0*/)
-        {
-            Debug.Log(hit.transform.name);
-            Paint(hit);
-            //弾回収
-            HideFromStage();
-        }
         //0以下だと回収
-        if (transform.position.y < 0)
+        if (transform.position.y < -1)
         {
             HideFromStage();
         }
@@ -85,7 +72,7 @@ public class BallScript : MonoBehaviour
     /// <param name="shotPosition">発射位置</param>
     public void SetVelocity(Vector3 shotDirections, Vector3 shotPosition)
     {
-
+        //射程範囲内の初期化
         isAngle = false;
         //向き設定
         _shootVelocity = shotDirections.normalized;
@@ -107,13 +94,45 @@ public class BallScript : MonoBehaviour
     {
         isAngle = true;
         //下に落とす
-        _shootVelocity += Vector3.down * Time.deltaTime * _foolSpeed;
-        transform.position += _shootVelocity * Time.deltaTime;
+        _shootVelocity = Vector3.down;
+        transform.position += _shootVelocity * Time.deltaTime * _foolSpeed;
     }
-   private void Paint(RaycastHit hit)
+    private void OnCollisionEnter( Collision collision)
     {
-        GameObject decal = Instantiate(_ink, hit.point, Quaternion.identity);
-        decal.transform.forward = hit.normal; // デカールを法線方向に向ける
+        // Debug確認用Plane作成
+        if (collision.gameObject.tag == "floor")
+        {
+            Debug.Log(collision.gameObject.name);
+            Painteble paintable = collision.gameObject.GetComponent<Painteble>();
+            ContactPoint contact = collision.GetContact(0);
+            Vector3 normal = contact.normal;
+            Vector3 hitPosition = contact.point;
+            Vector3 tangent = Vector3.Cross(normal, Vector3.right).normalized;
+
+            if (tangent.sqrMagnitude < 0.01f)
+            {
+                tangent = Vector3.Cross(normal, Vector3.forward).normalized;
+            }
+
+            float size = 2f;
+            Color c = Color.red;
+            //デバック用
+            var plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            plane.transform.position = hitPosition + normal;
+            plane.transform.rotation = Quaternion.LookRotation(Vector3.Cross(normal, tangent).normalized, normal);
+            plane.transform.localScale = Vector3.one * (size * 0.05f);
+            Destroy(plane.GetComponent<Collider>());
+            paintable.Paint
+                (
+                worldPosition: hitPosition,
+                normal: normal,
+                tangent: tangent,
+                decalSize: size,
+                color: c
+                );
+            HideFromStage();
+        }
+        
     }
 }
 
