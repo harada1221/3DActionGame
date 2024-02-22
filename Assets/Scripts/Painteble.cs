@@ -6,11 +6,10 @@
 *
 *　　原田　智大
 */
-
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(MeshRenderer))]
+[RequireComponent(typeof(MeshFilter))]
 public class Painteble  : MonoBehaviour
 {
     #region 変数宣言
@@ -47,17 +46,20 @@ public class Painteble  : MonoBehaviour
         _decalPainter.SetDecalTexture(_texture);
     }
 
-
+    /// <summary>
+    /// デカール用の座標と傾き大きさ色を渡す
+    /// </summary>
     public void Paint(
-    Vector3 worldPosition,
-    Vector3 normal,
-    Vector3 tangent,
-    float decalSize,
-    Color color)
+        Vector3 worldPosition,
+        Vector3 normal,
+        Vector3 tangent,
+        float decalSize,
+        Color color)
     {
         Vector3 positionOS = transform.InverseTransformPoint(worldPosition);
-        Vector3 normalOS = transform.InverseTransformPoint(normal);
+        Vector3 normalOS = transform.InverseTransformDirection(normal);
         Vector3 tangentOS = transform.InverseTransformDirection(tangent);
+        //値の更新
         _decalPainter.SetPointer(
              positionOS,
              normalOS,
@@ -66,6 +68,7 @@ public class Painteble  : MonoBehaviour
              color,
              transform.lossyScale
             );
+        //更新座標にデカールの貼り付け
         _decalPainter.Paint();
     }
 }

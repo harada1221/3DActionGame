@@ -20,7 +20,7 @@ public class CameraScript : MonoBehaviour
     private float _speed = default;
     private PlayerScript _playerScript = default;
     private GameObject _hitObj = default;
-    private const float  _rayDistance = 5f;
+    private const float  _rayDistance = 3f;
     private const string _horizontal = "Horizontal2";
     private const string _vertical = "Vertical2";
     #endregion

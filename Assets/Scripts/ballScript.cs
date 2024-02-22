@@ -20,6 +20,8 @@ public class BallScript : MonoBehaviour
     private float _foolSpeed = default;
     [SerializeField, Header("当たり判定の半径")]
     private float _radius = 0.2f;
+    [SerializeField]
+    private Color _paintColor = Color.red;
     //射撃の向き
     private Vector3 _shootVelocity = default;
     //射撃するプレイヤー
@@ -97,42 +99,34 @@ public class BallScript : MonoBehaviour
         _shootVelocity = Vector3.down;
         transform.position += _shootVelocity * Time.deltaTime * _foolSpeed;
     }
-    private void OnCollisionEnter( Collision collision)
+    private void OnCollisionEnter(Collision collision)
     {
-        // Debug確認用Plane作成
         if (collision.gameObject.tag == "floor")
         {
-            Debug.Log(collision.gameObject.name);
+            //当たった場所を取得
             Painteble paintable = collision.gameObject.GetComponent<Painteble>();
             ContactPoint contact = collision.GetContact(0);
             Vector3 normal = contact.normal;
             Vector3 hitPosition = contact.point;
             Vector3 tangent = Vector3.Cross(normal, Vector3.right).normalized;
-
             if (tangent.sqrMagnitude < 0.01f)
             {
                 tangent = Vector3.Cross(normal, Vector3.forward).normalized;
             }
 
             float size = 2f;
-            Color c = Color.red;
-            //デバック用
-            var plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            plane.transform.position = hitPosition + normal;
-            plane.transform.rotation = Quaternion.LookRotation(Vector3.Cross(normal, tangent).normalized, normal);
-            plane.transform.localScale = Vector3.one * (size * 0.05f);
-            Destroy(plane.GetComponent<Collider>());
+            //テクスチャを更新
             paintable.Paint
                 (
-                worldPosition: hitPosition,
-                normal: normal,
-                tangent: tangent,
-                decalSize: size,
-                color: c
+                hitPosition,
+                normal,
+                tangent,
+                size,
+                 _paintColor
                 );
             HideFromStage();
         }
-        
+
     }
 }
 
