@@ -121,8 +121,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _speed: 30
   _foolSpeed: 10
-  _radius: 0.1
-  c: {r: 1, g: 0, b: 0, a: 1}
+  _paintColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!54 &2871910716394358595
 Rigidbody:
   m_ObjectHideFlags: 0

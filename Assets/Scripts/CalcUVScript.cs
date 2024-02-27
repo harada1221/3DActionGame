@@ -13,8 +13,9 @@ using UnityEngine;
 
 public class CalcUVScript : MonoBehaviour
 {
-    public void HitObj(RaycastHit hitinfo)
+    public Vector2 HitObj(RaycastHit hitinfo)
     {
+        Vector2 uv = default;
         MeshFilter meshRenderer = hitinfo.transform.GetComponent<MeshFilter>();
         Mesh mesh = meshRenderer.sharedMesh;
         for (int i = 0; i < mesh.triangles.Length; i += 3)
@@ -99,15 +100,16 @@ public class CalcUVScript : MonoBehaviour
                 float u = areaFirst / triangleArea;
                 float v = areaSecond / triangleArea;
                 float w = 1 / ((1 - u - v) * 1 / pFirst.w + u * 1 / pSecond.w + v * 1 / pThird.w);
-                Vector2 uv = w * ((1 - u - v) * uvFirst / pFirst.w + u * uvSecound / pSecond.w + v * uvThird / pThird.w);
+                uv = w * ((1 - u - v) * uvFirst / pFirst.w + u * uvSecound / pSecond.w + v * uvThird / pThird.w);
 
                 //uvが求まったよ!!!!
                 Debug.Log(uv + ":" + hitinfo.textureCoord);
-                return;
+                return uv;
             }
 
             #endregion 3.点pのUV座標を求める
         }
+        return Vector2.zero;
     }
 }
 

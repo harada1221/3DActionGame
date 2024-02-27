@@ -18,9 +18,7 @@ public class BallScript : MonoBehaviour
     private float _speed = default;
     [SerializeField, Header("落下スピード")]
     private float _foolSpeed = default;
-    [SerializeField, Header("当たり判定の半径")]
-    private float _radius = 0.2f;
-    [SerializeField]
+    [SerializeField,Header("塗りの色")]
     private Color _paintColor = Color.red;
     //射撃の向き
     private Vector3 _shootVelocity = default;
@@ -113,7 +111,7 @@ public class BallScript : MonoBehaviour
             {
                 tangent = Vector3.Cross(normal, Vector3.forward).normalized;
             }
-
+            //塗りの大きさ
             float size = 2f;
             //テクスチャを更新
             paintable.Paint
