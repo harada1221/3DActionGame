@@ -18,8 +18,10 @@ public class BallScript : MonoBehaviour
     private float _speed = default;
     [SerializeField, Header("落下スピード")]
     private float _foolSpeed = default;
-    [SerializeField,Header("塗りの色")]
+    [SerializeField, Header("塗りの色")]
     private Color _paintColor = Color.red;
+    [SerializeField, Header("塗りの大きさ")]
+    private float _size = 1f;
     //射撃の向き
     private Vector3 _shootVelocity = default;
     //射撃するプレイヤー
@@ -111,17 +113,16 @@ public class BallScript : MonoBehaviour
             {
                 tangent = Vector3.Cross(normal, Vector3.forward).normalized;
             }
-            //塗りの大きさ
-            float size = 2f;
             //テクスチャを更新
             paintable.Paint
                 (
                 hitPosition,
                 normal,
                 tangent,
-                size,
+                _size,
                  _paintColor
                 );
+            //弾回収
             HideFromStage();
         }
 

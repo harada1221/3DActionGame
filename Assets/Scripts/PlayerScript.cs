@@ -33,6 +33,8 @@ public class PlayerScript : MonoBehaviour
 
     //銃スクリプト
     private GunScript _gunScript = default;
+    //
+    private TankScript _tankScript = default;
     //プレイヤーのアニメータ
     private Animator _animator = default;
     //タイマーカウント
@@ -55,12 +57,12 @@ public class PlayerScript : MonoBehaviour
     private const string _shot = "RTrigger";
     private const string _crouch = "LTrigger";
     #endregion
-    private enum PlayerStatus
+    public enum PlayerStatus
     {
-        Idle,
-        Crouch,
-        Diver,
-        Small
+        Idle,//通常状態
+        Crouch,//潜り状態
+        Diver,//壁移動状態
+        Small//小さい状態
     }
     #region プロパティ
     public bool GetShoot { get => isShoot; }
@@ -70,6 +72,7 @@ public class PlayerScript : MonoBehaviour
     /// </summary>
     private void Start()
     {
+        _tankScript = GetComponent<TankScript>();
         //アニメーター取得
         _animator = GetComponent<Animator>();
         //銃のスクリプト取得
@@ -81,6 +84,13 @@ public class PlayerScript : MonoBehaviour
     /// </summary>
     private void Update()
     {
+        if (transform.position.y < -1)
+        {
+            transform.position = Vector3.zero;
+            _mainCamera.transform.position = new Vector3(0, 2, -4);
+
+            _mainCamera.transform.rotation = Quaternion.Euler(2, 0, 0);
+        }
         Debug.DrawRay(transform.position, transform.forward * _rayDistance, Color.blue);
         //スティックのX,Y軸がどれほど移動したか
         float X_Move = Input.GetAxisRaw(_horizontal);
@@ -164,6 +174,14 @@ public class PlayerScript : MonoBehaviour
             {
                 _playerStatus = PlayerStatus.Small;
                 this.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+                if (Physics.Raycast(transform.position, transform.forward, out hit, _rayDistance))
+                {
+                    ColorCheck(hit);
+                    if (isMyColor == true)
+                    {
+                        _playerStatus = PlayerStatus.Diver;
+                    }
+                }
             }
         }
         else
@@ -220,12 +238,17 @@ public class PlayerScript : MonoBehaviour
             Quaternion newRotation = Quaternion.LookRotation(moveDirection);
             transform.rotation = newRotation;
         }
+
         //ぶつかっているか
         if (!Physics.Raycast(transform.position, moveDirection, _rayDistance))
         {
             //移動させる
             transform.position += moveDirection * _speed * Time.deltaTime;
             _mainCamera.transform.position += moveDirection * _speed * Time.deltaTime;
+        }
+        else if (_playerStatus == PlayerStatus.Crouch)
+        {
+            _playerStatus = PlayerStatus.Diver;
         }
     }
     /// <summary>
@@ -297,13 +320,15 @@ public class PlayerScript : MonoBehaviour
             }
             else
             {
-                Debug.Log("in");
+                //位置調整
                 moveDirection = Vector3.up * 20;
             }
 
         }
+        //床に当たっていて下入力されているか
         if (Physics.Raycast(transform.position, Vector3.down, _rayDistance) && MoveZ <= 0)
         {
+            //ステータス変更
             _playerStatus = PlayerStatus.Crouch;
         }
         //プレイヤーとカメラの位置を移動

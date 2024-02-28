@@ -26,8 +26,12 @@ public class GunScript : MonoBehaviour
     private BallScript _ballScript = default;
     [SerializeField, Header("射撃のクールタイム")]
     private float _shotCoolTime = 2f;
+    [SerializeField, Header("インクの減少量")]
+    private float _tankdecrease = 3;
     //射撃のカウント
     private float _shotTime = default;
+    //インクタンクのスクリプト
+    private TankScript _tankScript = default;
     //射撃の方向
     private Vector3 _finalDestination = default;
     //プール用のQueue
@@ -39,6 +43,7 @@ public class GunScript : MonoBehaviour
     /// </summary>
     private void Start()
     {
+        _tankScript = GetComponent<TankScript>();
         //プール生成
         _ballQueue = new Queue<BallScript>();
         //最大数作る
@@ -58,9 +63,9 @@ public class GunScript : MonoBehaviour
     public void Ballistic()
     {
         //クールタイム加算
-        _shotTime +=  Time.deltaTime;
+        _shotTime += Time.deltaTime;
         //クールタイムならリターン
-        if (_shotTime < _shotCoolTime)
+        if (_shotTime < _shotCoolTime || _tankScript.GetNowCapacity <= 0)
         {
             return;
         }
@@ -81,12 +86,15 @@ public class GunScript : MonoBehaviour
         //弾を表示
         ballScript.gameObject.SetActive(true);
         //弾の方向を設定
+        _finalDestination = default;
         _finalDestination = transform.forward;
         _finalDestination.y = _mainCamera.transform.forward.y;
         //発射位置に移動
         ballScript.transform.position = _shootPosition.transform.position;
         //方向を決定
         ballScript.SetVelocity(_finalDestination, _shootPosition.transform.position);
+        //インクタンク減少
+        _tankScript.Inkdecrease(_tankdecrease);
     }
     /// <summary>
     /// 弾を格納する
