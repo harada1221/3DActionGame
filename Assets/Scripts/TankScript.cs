@@ -16,8 +16,10 @@ public class TankScript : MonoBehaviour
     #region 変数宣言
     [SerializeField, Header("タンクの最大容量")]
     private float _maxCapacity = 100;
-    [SerializeField, Header("インク回復速度")]
+    [SerializeField, Header("通常時のインク回復速度")]
     private float _healSpeed = 10;
+    [SerializeField, Header("潜り時のインク回復速度")]
+    private float _healCrouchSpeed = 30;
     private float _nowCapacity = default;
 
     #endregion
@@ -50,30 +52,32 @@ public class TankScript : MonoBehaviour
     /// <param name="increment">回復量</param>
     public void InkRecovery(PlayerScript.PlayerStatus playerStatus)
     {
+        //上限だと処理しない
         if (_nowCapacity >= _maxCapacity)
         {
+            _nowCapacity = _maxCapacity;
             return;
         }
         switch (playerStatus)
         {
-            //インク回復
+            //潜り状態
             case PlayerScript.PlayerStatus.Crouch:
                 //タンク回復
-                _nowCapacity += _nowCapacity * Time.deltaTime;
+                _nowCapacity += _healCrouchSpeed * Time.deltaTime;
                 break;
             //歩き状態の移動
             case PlayerScript.PlayerStatus.Idle:
                 //タンク回復
-                _nowCapacity += _nowCapacity * Time.deltaTime;
+                _nowCapacity += _healSpeed * Time.deltaTime;
                 break;
             case PlayerScript.PlayerStatus.Small:
                 //タンク回復
-                _nowCapacity += _nowCapacity * Time.deltaTime;
+                _nowCapacity += _healSpeed * Time.deltaTime;
                 break;
             //壁の潜り状態の移動
             case PlayerScript.PlayerStatus.Diver:
                 //タンク回復
-                _nowCapacity += _nowCapacity * Time.deltaTime;
+                _nowCapacity += _healCrouchSpeed * Time.deltaTime;
                 break;
         }
     }

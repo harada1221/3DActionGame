@@ -84,34 +84,43 @@ public class PlayerScript : MonoBehaviour
     /// </summary>
     private void Update()
     {
+        Debug.Log(isMyColor);
+        //射撃中か
+        if (isShoot == false)
+        {
+            //インク回復
+            _tankScript.InkRecovery(_playerStatus);
+        }
+        //Debug.Log(_tankScript.GetNowCapacity);
+        //プレイヤーとカメラの位置を戻す
         if (transform.position.y < -1)
         {
             transform.position = Vector3.zero;
             _mainCamera.transform.position = new Vector3(0, 2, -4);
-
             _mainCamera.transform.rotation = Quaternion.Euler(2, 0, 0);
         }
-        Debug.DrawRay(transform.position, transform.forward * _rayDistance, Color.blue);
         //スティックのX,Y軸がどれほど移動したか
         float X_Move = Input.GetAxisRaw(_horizontal);
         float Z_Move = Input.GetAxisRaw(_vertical);
         //コントローラーのR.Lトリガー
         float R_Trigger = Input.GetAxisRaw(_shot);
         float L_Trigger = Input.GetAxisRaw(_crouch);
+        Debug.Log(_playerStatus);
         //移動
         if (X_Move != 0 || Z_Move != 0)
         {
-            Debug.Log(_playerStatus);
+            //Debug.Log(_playerStatus);
             switch (_playerStatus)
             {
                 //潜り状態の移動
                 case PlayerStatus.Crouch:
                     PlayerCrouchMove(X_Move, Z_Move);
                     break;
-                //歩き状態の移動
+                //通常歩き状態の移動
                 case PlayerStatus.Idle:
                     PlayerWalkMove(X_Move, Z_Move);
                     break;
+                //小さいサイズの歩き状態
                 case PlayerStatus.Small:
                     PlayerWalkMove(X_Move, Z_Move);
                     break;
@@ -174,7 +183,7 @@ public class PlayerScript : MonoBehaviour
             {
                 _playerStatus = PlayerStatus.Small;
                 this.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
-                if (Physics.Raycast(transform.position, transform.forward, out hit, _rayDistance))
+                if (Physics.Raycast(transform.position + Vector3.up, transform.forward, out hit, _rayDistance))
                 {
                     ColorCheck(hit);
                     if (isMyColor == true)
@@ -312,7 +321,7 @@ public class PlayerScript : MonoBehaviour
             ColorCheck(hit);
             //衝突したオブジェクトの法線ベクトルを取得
             Vector3 surfaceNormal = hit.normal;
-            //法線ベクトルに対して垂直な方向を取得
+            //自分の色の上にいるか
             if (isMyColor == true)
             {
                 Vector3 horizontalDirection = -Vector3.Cross(Vector3.up, surfaceNormal).normalized;
@@ -321,7 +330,7 @@ public class PlayerScript : MonoBehaviour
             else
             {
                 //位置調整
-                moveDirection = Vector3.up * 20;
+                moveDirection = Vector3.up * 10;
             }
 
         }

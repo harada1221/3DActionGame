@@ -10,15 +10,15 @@ using UnityEngine;
 
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
-public class Painteble  : MonoBehaviour
+public class Painteble : MonoBehaviour
 {
     #region 変数宣言
-    [SerializeField]
-    private Texture _texture;
+    [SerializeField, Header("貼り付けるテクスチャ")]
+    private Texture _texture = default;
     MeshRenderer _meshRenderer = default;
     MeshFilter _meshFilter = default;
     DecalPainter _decalPainter = default;
-    Material _material= default;
+    Material _material = default;
     #endregion
     /// <summary>
     /// 初期化処理
