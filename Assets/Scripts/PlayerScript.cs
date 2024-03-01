@@ -10,6 +10,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerScript : MonoBehaviour
 {
@@ -26,14 +27,20 @@ public class PlayerScript : MonoBehaviour
     private Camera _mainCamera = default;
     [SerializeField, Header("ジャンプの時間")]
     private float _jumpTime = 10f;
+    [SerializeField, Header("表示させる残量")]
+    private Slider _slider = default;
+    [SerializeField, Header("潜り状態の加速度")]
+    private float _crouchAcceleration = 10;
+    [SerializeField, Header("潜り状態の最高速度")]
+    private float _maxSpeed = 30;
+    [SerializeField, Header("壁移動スピード")]
+    private float _diverSpeed = 30;
     [SerializeField, Header("潜り状態の移動スピード")]
     private float _crouchSpeed = 5f;
-    [SerializeField, Header("潜り状態の最高スピード")]
-    private float _maxSpeed = 1.0f;
 
     //銃スクリプト
     private GunScript _gunScript = default;
-    //
+    //インクタンクのスクリプト
     private TankScript _tankScript = default;
     //プレイヤーのアニメータ
     private Animator _animator = default;
@@ -59,10 +66,10 @@ public class PlayerScript : MonoBehaviour
     #endregion
     public enum PlayerStatus
     {
-        Idle,//通常状態
+        Idle,  //通常状態
         Crouch,//潜り状態
-        Diver,//壁移動状態
-        Small//小さい状態
+        Diver, //壁移動状態
+        Small  //小さい状態
     }
     #region プロパティ
     public bool GetShoot { get => isShoot; }
@@ -72,6 +79,7 @@ public class PlayerScript : MonoBehaviour
     /// </summary>
     private void Start()
     {
+        //インク残量管理スクリプト取得
         _tankScript = GetComponent<TankScript>();
         //アニメーター取得
         _animator = GetComponent<Animator>();
@@ -84,19 +92,17 @@ public class PlayerScript : MonoBehaviour
     /// </summary>
     private void Update()
     {
-        Debug.Log(isMyColor);
         //射撃中か
         if (isShoot == false)
         {
             //インク回復
             _tankScript.InkRecovery(_playerStatus);
         }
-        //Debug.Log(_tankScript.GetNowCapacity);
-        //プレイヤーとカメラの位置を戻す
+        //初期いちに戻す￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥カリオペ
         if (transform.position.y < -1)
         {
             transform.position = Vector3.zero;
-            _mainCamera.transform.position = new Vector3(0, 2, -4);
+            _mainCamera.transform.position = new Vector3(0f, 2.4f, -4f);
             _mainCamera.transform.rotation = Quaternion.Euler(2, 0, 0);
         }
         //スティックのX,Y軸がどれほど移動したか
@@ -107,39 +113,39 @@ public class PlayerScript : MonoBehaviour
         float L_Trigger = Input.GetAxisRaw(_crouch);
         Debug.Log(_playerStatus);
         //移動
-        if (X_Move != 0 || Z_Move != 0)
+        switch (_playerStatus)
         {
-            //Debug.Log(_playerStatus);
-            switch (_playerStatus)
-            {
-                //潜り状態の移動
-                case PlayerStatus.Crouch:
-                    PlayerCrouchMove(X_Move, Z_Move);
-                    break;
-                //通常歩き状態の移動
-                case PlayerStatus.Idle:
-                    PlayerWalkMove(X_Move, Z_Move);
-                    break;
-                //小さいサイズの歩き状態
-                case PlayerStatus.Small:
-                    PlayerWalkMove(X_Move, Z_Move);
-                    break;
-                //壁の潜り状態の移動
-                case PlayerStatus.Diver:
-                    PlayerDiverMove(X_Move, Z_Move);
-                    break;
-            }
-        }
-        else
-        {
-            //移動の慣性が残っているか
-            if (_playerMoveDirection != Vector3.zero)
-            {
-                //徐々に減速させる
-                _playerMoveDirection -= _playerMoveDirection * Time.deltaTime * _speed;
-                //慣性の移動分
+            //潜り状態の移動
+            case PlayerStatus.Crouch:
                 PlayerCrouchMove(X_Move, Z_Move);
-            }
+                _slider.gameObject.SetActive(true);
+                break;
+            //通常歩き状態の移動
+            case PlayerStatus.Idle:
+                PlayerWalkMove(X_Move, Z_Move);
+                _slider.gameObject.SetActive(false);
+                break;
+            //小さいサイズの歩き状態
+            case PlayerStatus.Small:
+                PlayerWalkMove(X_Move, Z_Move);
+                _slider.gameObject.SetActive(true);
+                break;
+            //壁の潜り状態の移動
+            case PlayerStatus.Diver:
+                PlayerDiverMove(X_Move, Z_Move);
+                _slider.gameObject.SetActive(true);
+                break;
+        }
+        //移動の慣性が残っているか
+        if (_playerMoveDirection != Vector3.zero)
+        {
+            //徐々に減速させる
+            _playerMoveDirection -= _playerMoveDirection * Time.deltaTime * _speed;
+            //慣性の移動分
+            PlayerCrouchMove(X_Move, Z_Move);
+        }
+        if (X_Move == 0 && Z_Move == 0)
+        {
             _animator.SetBool("Walking", false);
         }
         //ジャンプ
@@ -152,9 +158,13 @@ public class PlayerScript : MonoBehaviour
             isJump = false;
         }
         RaycastHit hit;
+        Debug.DrawRay(transform.position, Vector3.down * _rayDistance, Color.blue);
+        Debug.Log(transform.position);
         //着地
         if (Physics.Raycast(transform.position, Vector3.down, out hit, _rayDistance))
         {
+            Debug.Log(hit.transform.gameObject.name);
+            Debug.Log("in");
             //自分の色の上にいるか
             ColorCheck(hit);
             //ジャンプリセット
@@ -181,13 +191,20 @@ public class PlayerScript : MonoBehaviour
             }
             else
             {
+                //ステータス変更
                 _playerStatus = PlayerStatus.Small;
+                //慣性をゼロにする
+                _playerMoveDirection = Vector3.zero;
+                //大きさ変更
                 this.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
-                if (Physics.Raycast(transform.position + Vector3.up, transform.forward, out hit, _rayDistance))
+                //壁に当たっているか
+                if (Physics.Raycast(transform.position + Vector3.up, transform.forward * 2, out hit, _rayDistance))
                 {
+                    //自分の色に触れているか
                     ColorCheck(hit);
                     if (isMyColor == true)
                     {
+                        //ステータス変更
                         _playerStatus = PlayerStatus.Diver;
                     }
                 }
@@ -255,10 +272,6 @@ public class PlayerScript : MonoBehaviour
             transform.position += moveDirection * _speed * Time.deltaTime;
             _mainCamera.transform.position += moveDirection * _speed * Time.deltaTime;
         }
-        else if (_playerStatus == PlayerStatus.Crouch)
-        {
-            _playerStatus = PlayerStatus.Diver;
-        }
     }
     /// <summary>
     /// 潜り状態の移動
@@ -276,15 +289,17 @@ public class PlayerScript : MonoBehaviour
         cameraRight.y -= _mainCamera.transform.right.y;
         Vector3 moveDirection = comForward * MoveZ + cameraRight * MoveX;
         moveDirection = moveDirection.normalized;
-        //移動速度を加速させる
-        _playerMoveDirection += moveDirection * Time.deltaTime;
-        //移動速度の大きさが上限値を超えないように制限
+
+        //加速度の増加
+        Vector3 acceleration = moveDirection * _crouchAcceleration;
+        _playerMoveDirection += acceleration * Time.deltaTime;
+        //移動速度を制限
         if (_playerMoveDirection.magnitude > _maxSpeed)
         {
-            _playerMoveDirection = _playerMoveDirection.normalized * _maxSpeed;
+            _playerMoveDirection = _playerMoveDirection.normalized * _crouchAcceleration;
         }
         //プレイヤーを移動方向に向かせる
-        if (moveDirection != Vector3.zero && isShoot == false)
+        if (moveDirection != Vector3.zero && !isShoot)
         {
             Quaternion newRotation = Quaternion.LookRotation(moveDirection);
             transform.rotation = newRotation;
@@ -311,11 +326,14 @@ public class PlayerScript : MonoBehaviour
     /// <param name="MoveZ">Zの移動量</param>
     private void PlayerDiverMove(float MoveX, float MoveZ)
     {
+        //見た目の変更
         this.transform.localScale = Vector3.zero;
         RaycastHit hit;
         Vector3 moveDirection = default;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, _rayDistance))
+        if (Physics.Raycast(transform.position, transform.forward, out hit, _rayDistance * 2))
         {
+            Debug.Log("hit");
+            //ジャンプ情報初期化
             isJump = false;
             _timer = 0;
             ColorCheck(hit);
@@ -324,12 +342,13 @@ public class PlayerScript : MonoBehaviour
             //自分の色の上にいるか
             if (isMyColor == true)
             {
+                //前方向を取得
                 Vector3 horizontalDirection = -Vector3.Cross(Vector3.up, surfaceNormal).normalized;
                 moveDirection = Vector3.up * MoveZ + MoveX * horizontalDirection;
             }
             else
             {
-                //位置調整
+                //位置調整￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥仮置き
                 moveDirection = Vector3.up * 10;
             }
 
@@ -340,9 +359,15 @@ public class PlayerScript : MonoBehaviour
             //ステータス変更
             _playerStatus = PlayerStatus.Crouch;
         }
+        //動く先に壁がある場合は上下のみ
+        if (Physics.Raycast(transform.position, moveDirection, _rayDistance))
+        {
+            moveDirection.x = 0;
+            moveDirection.z = 0;
+        }
         //プレイヤーとカメラの位置を移動
-        transform.position += moveDirection * _speed * Time.deltaTime;
-        _mainCamera.transform.position += moveDirection * _speed * Time.deltaTime;
+        transform.position += moveDirection * _diverSpeed * Time.deltaTime;
+        _mainCamera.transform.position += moveDirection * _diverSpeed * Time.deltaTime;
     }
     /// <summary>
     /// ジャンプさせる

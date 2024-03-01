@@ -10,6 +10,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TankScript : MonoBehaviour
 {
@@ -20,6 +21,10 @@ public class TankScript : MonoBehaviour
     private float _healSpeed = 10;
     [SerializeField, Header("潜り時のインク回復速度")]
     private float _healCrouchSpeed = 30;
+    [SerializeField, Header("インクの残量表示")]
+    private Slider _inkTank = default;
+    [SerializeField, Header("")]
+    private GameObject _tankObj = default;
     private float _nowCapacity = default;
 
     #endregion
@@ -31,6 +36,8 @@ public class TankScript : MonoBehaviour
     {
         //タンクの容量初期化
         _nowCapacity = _maxCapacity;
+        //見た目初期化
+        _inkTank.value = _maxCapacity;
     }
     /// <summary>
     /// タンクの残量を減らす
@@ -41,10 +48,12 @@ public class TankScript : MonoBehaviour
         if (_nowCapacity <= 0)
         {
             _nowCapacity = 0;
+            _inkTank.value = _nowCapacity;
             return;
         }
         //タンク減少
         _nowCapacity -= reduction;
+        _inkTank.value = _nowCapacity;
     }
     /// <summary>
     /// タンクの容量を回復
@@ -56,6 +65,7 @@ public class TankScript : MonoBehaviour
         if (_nowCapacity >= _maxCapacity)
         {
             _nowCapacity = _maxCapacity;
+            _inkTank.value = _nowCapacity;
             return;
         }
         switch (playerStatus)
@@ -64,22 +74,27 @@ public class TankScript : MonoBehaviour
             case PlayerScript.PlayerStatus.Crouch:
                 //タンク回復
                 _nowCapacity += _healCrouchSpeed * Time.deltaTime;
+                _inkTank.gameObject.SetActive(true);
                 break;
             //歩き状態の移動
             case PlayerScript.PlayerStatus.Idle:
                 //タンク回復
                 _nowCapacity += _healSpeed * Time.deltaTime;
+                _inkTank.gameObject.SetActive(false);
                 break;
             case PlayerScript.PlayerStatus.Small:
                 //タンク回復
                 _nowCapacity += _healSpeed * Time.deltaTime;
+                _inkTank.gameObject.SetActive(false);
                 break;
             //壁の潜り状態の移動
             case PlayerScript.PlayerStatus.Diver:
                 //タンク回復
                 _nowCapacity += _healCrouchSpeed * Time.deltaTime;
+                _inkTank.gameObject.SetActive(true);
                 break;
         }
+        _inkTank.value = _nowCapacity;
     }
 }
 
