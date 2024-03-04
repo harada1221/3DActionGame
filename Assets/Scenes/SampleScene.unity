@@ -2430,7 +2430,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b62f61ce1dd5b0249bd2f863a4d22076, type: 2}
+  - {fileID: 2100000, guid: e51023f48994f5a4ab839123e6271371, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3737,7 +3737,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 078723cdc35e25c4194f9ae5a8e6b413, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.95
+      value: 1.05
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 078723cdc35e25c4194f9ae5a8e6b413, type: 3}
       propertyPath: m_LocalRotation.w
@@ -5630,7 +5630,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.98571396, y: 0.070624374, z: -0.13418613}
-  m_LocalScale: {x: 1.0089189, y: 1.0089189, z: 1.0089189}
+  m_LocalScale: {x: 1.0089189, y: 1, z: 1.0089189}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1072689363}
@@ -5661,7 +5661,7 @@ Transform:
   m_GameObject: {fileID: 2143104818}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.065, y: 0.742, z: -0.09}
+  m_LocalPosition: {x: 1.061, y: 0.776, z: -0.071}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -10911,6 +10911,7 @@ GameObject:
   - component: {fileID: 8229766642368994577}
   - component: {fileID: 8229766642368994578}
   - component: {fileID: 8229766642368994579}
+  - component: {fileID: 8229766642368994580}
   m_Layer: 0
   m_Name: UnityChanSSU
   m_TagString: Player
@@ -14565,7 +14566,24 @@ MonoBehaviour:
   _healSpeed: 2
   _healCrouchSpeed: 30
   _inkTank: {fileID: 342664386}
-  _tankObj: {fileID: 0}
+  _tankObj: {fileID: 2116946927}
+--- !u!114 &8229766642368994580
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4930694957428485891}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5635b42fa7f22444385b56edc668a5ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _shootPosition: {fileID: 791212580}
+  _maxCount: 5
+  _mainCamera: {fileID: 963194227}
+  _bomScript: {fileID: 5767584784913528931, guid: af594f86f2d2ca8418664e8b2286bb36, type: 3}
+  _tankdecrease: 0
 --- !u!1 &8330458201746648409
 GameObject:
   m_ObjectHideFlags: 0

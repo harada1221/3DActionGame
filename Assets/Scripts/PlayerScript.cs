@@ -40,6 +40,8 @@ public class PlayerScript : MonoBehaviour
 
     //銃スクリプト
     private GunScript _gunScript = default;
+    //
+    private BombControlScript _bombControlScript = default;
     //インクタンクのスクリプト
     private TankScript _tankScript = default;
     //プレイヤーのアニメータ
@@ -63,6 +65,7 @@ public class PlayerScript : MonoBehaviour
     private const string _jump = "Jump2";
     private const string _shot = "RTrigger";
     private const string _crouch = "LTrigger";
+    private const string _rb = "RB";
     #endregion
     public enum PlayerStatus
     {
@@ -85,6 +88,8 @@ public class PlayerScript : MonoBehaviour
         _animator = GetComponent<Animator>();
         //銃のスクリプト取得
         _gunScript = GetComponent<GunScript>();
+        //ボムの管理スクリプト
+        _bombControlScript = GetComponent<BombControlScript>();
     }
 
     /// <summary>
@@ -158,13 +163,9 @@ public class PlayerScript : MonoBehaviour
             isJump = false;
         }
         RaycastHit hit;
-        Debug.DrawRay(transform.position, Vector3.down * _rayDistance, Color.blue);
-        Debug.Log(transform.position);
         //着地
         if (Physics.Raycast(transform.position, Vector3.down, out hit, _rayDistance))
         {
-            Debug.Log(hit.transform.gameObject.name);
-            Debug.Log("in");
             //自分の色の上にいるか
             ColorCheck(hit);
             //ジャンプリセット
@@ -239,7 +240,14 @@ public class PlayerScript : MonoBehaviour
             //射撃終了
             isShoot = false;
         }
-
+        if (Input.GetButton(_rb))
+        {
+            Debug.Log("in");
+        }
+        if (Input.GetButtonUp(_rb))
+        {
+            _bombControlScript.Bombistic();
+        }
     }
     /// <summary>
     /// プレイヤーの歩き移動

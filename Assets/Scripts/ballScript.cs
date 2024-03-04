@@ -21,8 +21,6 @@ public class BallScript : MonoBehaviour
     private float _size = 1f;
     //射撃の向き
     private Vector3 _shootVelocity = default;
-    //射撃するプレイヤー
-    private GameObject _player = default;
     //射撃位置
     private Vector3 _nowShotPosition = default;
     //銃のスクリプト
@@ -35,10 +33,8 @@ public class BallScript : MonoBehaviour
     /// </summary>
     private void Start()
     {
-        //プレイヤー取得
-        _player = GameObject.FindWithTag("Player");
         //銃のスクリプト
-        _gunScript = _player.GetComponent<GunScript>();
+        _gunScript = GameObject.FindWithTag("Player").GetComponent<GunScript>();
     }
 
     /// <summary>
@@ -81,7 +77,7 @@ public class BallScript : MonoBehaviour
     /// <summary>
     /// 弾を回収する
     /// </summary>
-    public void HideFromStage()
+    private void HideFromStage()
     {
         //オブジェクトプールのCollect関数を呼び出し自身を回収
         _gunScript.BallCollect(this);

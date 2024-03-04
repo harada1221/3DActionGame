@@ -23,9 +23,12 @@ public class TankScript : MonoBehaviour
     private float _healCrouchSpeed = 30;
     [SerializeField, Header("インクの残量表示")]
     private Slider _inkTank = default;
-    [SerializeField, Header("")]
+    [SerializeField, Header("大きさを変更するオブジェクト")]
     private GameObject _tankObj = default;
+    //現在のインク量
     private float _nowCapacity = default;
+    //初期のタンクの大きさ
+    private Vector3 _baseScale = default;
 
     #endregion
     public float GetNowCapacity { get => _nowCapacity; }
@@ -38,6 +41,8 @@ public class TankScript : MonoBehaviour
         _nowCapacity = _maxCapacity;
         //見た目初期化
         _inkTank.value = _maxCapacity;
+        //初期の大きさ初期化
+        _baseScale = this.transform.localScale;
     }
     /// <summary>
     /// タンクの残量を減らす
@@ -53,7 +58,7 @@ public class TankScript : MonoBehaviour
         }
         //タンク減少
         _nowCapacity -= reduction;
-        _inkTank.value = _nowCapacity;
+        ChangeTank();
     }
     /// <summary>
     /// タンクの容量を回復
@@ -94,7 +99,18 @@ public class TankScript : MonoBehaviour
                 _inkTank.gameObject.SetActive(true);
                 break;
         }
+        ChangeTank();
+    }
+    /// <summary>
+    /// インク残量の見た目変更
+    /// </summary>
+    private void ChangeTank()
+    {
+        //表示変更
         _inkTank.value = _nowCapacity;
+        //オブジェクトの大きさ変更
+        _baseScale.y = _nowCapacity / _maxCapacity;
+        _tankObj.transform.localScale = _baseScale;
     }
 }
 

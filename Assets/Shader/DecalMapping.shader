@@ -8,13 +8,13 @@ Shader "DecalMapping"
 		_AccumulateTexture ("AccumulateTexture", 2D) = "black" {}
 		//デカールテクスチャ
 		_DecalTexture("Decal Texture", 2D) = "black" {}
-		//デカールペイント情報たち
+		//デカールペイント
 		_DecalRadius("Decal Radius", Float) = 0.5
 		_DecalPositionOS("Decal Position (Object Space)", Vector) = (0, 0, 0, 0)
 		_DecalNormal("Decal Normal", Vector) = (0, 1, 0, 0)
 		_DecalTangent("Decal Tangent", Vector) = (1, 0, 0, 0)
 		_Color("Color", Color) = (0, 0, 0, 0)
-		// オブジェクト情報
+		//オブジェクト情報
 		_ObjectScale("Object Scale", Vector) = (1, 1, 1, 1)
 	}
 
@@ -80,8 +80,7 @@ Shader "DecalMapping"
 				output.positionCS = float4(input.texcoord.xy * 2 - 1, 0, 1);
 				output.positionCS.y *= _ProjectionParams.x;
 
-				//計算をObject空間で行うため、Object空間の法線と座標を渡す。
-				//World空間でもいいが、halfで精度が足りなくなりやすいので理由がなければObject空間で計算する。
+				//計算をObject空間で行うため、Object空間の法線と座標を渡す
 				output.texcoord = TRANSFORM_TEX(input.texcoord, _AccumulateTexture);
 				output.normalOS = input.normal;
 				output.positionOS = input.positionOS.xyz;
@@ -96,17 +95,17 @@ Shader "DecalMapping"
 				half3 decalBitangent = normalize(cross(decalTangent, decalNormal));
 				decalTangent = normalize(cross(decalNormal, decalBitangent));
 							
-				//平面から描画座標のベクトルを求め、平面への正射影ベクトルを求める(=平面に投影した座標)
+				//平面から描画座標のベクトルを求め平面への正射影ベクトルを求める
 				const half3 decalCenterToPositionVector = (input.positionOS - _DecalPositionOS) * _ObjectScale;
 				const float2 positionOnPlane = float2(dot(decalTangent, decalCenterToPositionVector), dot(decalBitangent, decalCenterToPositionVector));
 		
-				//平面に投影した座標を、平面のUV座標に変換する
-				const half2 unclampedUv = (positionOnPlane / _DecalSize) + 0.5; // 0~1空間に正規化するが、範囲外の場合もあるのでClampしない。0~1なら平面内。
-				const half sameDirectionMask = step(0.2, dot(normal, decalNormal)); // Decalと同じ向きなら1, 逆なら0
-				const half decalAreaMask = int(0 <= unclampedUv.x && unclampedUv.x <= 1 && 0 <= unclampedUv.y && unclampedUv.y <= 1); // 平面内なら1, 平面外なら0 
+				//平面に投影した座標を平面のUV座標に変換する
+				const half2 unclampedUv = (positionOnPlane / _DecalSize) + 0.5; //0~1空間に正規化するが範囲外の場合もあるのでClampしない。0~1なら平面内。
+				const half sameDirectionMask = step(0.2, dot(normal, decalNormal)); //Decalと同じ向きなら1,逆なら0
+				const half decalAreaMask = int(0 <= unclampedUv.x && unclampedUv.x <= 1 && 0 <= unclampedUv.y && unclampedUv.y <= 1); //平面内なら1, 平面外なら0 
 				const half2 uv = unclampedUv * sameDirectionMask * decalAreaMask;
 				
-				//UV座標のDecalTextureの色をフェッチするだけ
+				//UV座標のDecalTextureの色をフェッチする
 				half4 decalColor = SAMPLE_TEXTURE2D(_DecalTexture, sampler_DecalTexture, TRANSFORM_TEX(uv, _DecalTexture));
 				decalColor.xyz *= _Color.xyz * decalColor.xyz * decalColor.w;
 				

@@ -65,7 +65,7 @@ public class GunScript : MonoBehaviour
         //クールタイム加算
         _shotTime += Time.deltaTime;
         //クールタイム、残量がないならリターン
-        if (_shotTime < _shotCoolTime || _tankScript.GetNowCapacity <= 0)
+        if (_shotTime < _shotCoolTime || _tankScript.GetNowCapacity <= _tankdecrease)
         {
             return;
         }
