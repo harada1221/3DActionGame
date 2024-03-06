@@ -133,7 +133,7 @@ public class DecalPainter : IDisposable
         RenderTexture activeRenderTexture = RenderTexture.active;
         RenderTexture.active = temporaryRenderTexture;
 
-        //対象Meshを用いて、デカール画像を累積テクスチャに重ねてRenderTargetに描画する
+        //対象Meshを用いてデカール画像を累積テクスチャに重ねてRenderTargetに描画する
         GL.Clear(clearDepth: true, clearColor: true, Color.clear);
         mappingMaterial.SetPass(0);
         Graphics.DrawMeshNow(_targetMesh, Vector3.zero, Quaternion.identity);
